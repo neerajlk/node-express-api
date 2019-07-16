@@ -4,7 +4,9 @@ function getRequestParams(model, params) {
     var query = {}
     Object.keys(model.schema.paths).forEach(key => {
         if (params[key]) {
-            query[key] = params[key]
+            if (model.schema.paths[key].instance == 'Number') query[key] = parseInt(params[key])
+            else
+                query[key] = params[key]
         }
     });
     return query;
@@ -40,31 +42,15 @@ exports.create = (req, res) => {
 
 // Retrieve and return all Persons from the database.
 exports.findAll = (req, res) => {
-
-    if (req.query.name || req.query.age) {
-        var query = getRequestParams(Person, req.query)
-
-        Person.find(query)
-            .then(persons => {
-                res.send(persons);
-            }).catch(err => {
-                res.status(500).send({
-                    message: err.message || "Some error occurred while retrieving Person details"
-                });
+    var query = getRequestParams(Person, req.query)
+    Person.find(query, null, { sort: { age: 1 } })
+        .then(persons => {
+            res.send(persons);
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Person details"
             });
-    }
-    else {
-        Person.find()
-            .then(persons => {
-                res.send(persons);
-            }).catch(err => {
-                res.status(500).send({
-                    message: err.message || "Some error occurred while retrieving Persons List."
-                });
-            });
-    }
-
-
+        });
 };
 
 // Find a single Person with a PersonId
