@@ -17,9 +17,10 @@ function getRequestParams(model, params) {
 exports.create = (req, res) => {
     // Validate request
     if (!req.body.name) {
-        return res.status(400).send({
+        var errMessage = {
             message: "Person Name can not be empty"
-        });
+        }
+        responseHandler.errorCallback(400, errMessage, res)
     }
 
     // Create a Person
@@ -62,9 +63,10 @@ exports.findOne = (req, res) => {
     Person.findById(req.params.personId)
         .then(person => {
             if (!person) {
-                return res.status(404).send({
+                var errMessage = {
                     message: "Person not found with id " + req.params.personId
-                });
+                }
+                responseHandler.errorCallback(404, errMessage, res)
             }
             res.send(person);
         }).catch(err => {
@@ -86,9 +88,10 @@ exports.findOne = (req, res) => {
 exports.update = (req, res) => {
     // Validate Request
     if (!req.body.name) {
-        return res.status(400).send({
+        var errMessage = {
             message: "Person name can not be empty"
-        });
+        }
+        responseHandler.errorCallback(400, errMessage, res)
     }
 
     // Find Person and update it with the request body
@@ -100,9 +103,10 @@ exports.update = (req, res) => {
     }, { new: true })
         .then(person => {
             if (!person) {
-                return res.status(404).send({
+                var errMessage = {
                     message: "person not found with id " + req.params.personId
-                });
+                }
+                responseHandler.errorCallback(404, errMessage, res)
             }
             res.send(person);
         }).catch(err => {
@@ -124,9 +128,10 @@ exports.delete = (req, res) => {
     Person.findByIdAndRemove(req.params.personId)
         .then(person => {
             if (!person) {
-                return res.status(404).send({
+                var errMessage = {
                     message: "Person not found with id " + req.params.personId
-                });
+                }
+                responseHandler.errorCallback(404, errMessage, res)
             }
             res.send({ message: "Person deleted successfully!" });
         }).catch(err => {
