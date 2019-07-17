@@ -1,4 +1,5 @@
 const Person = require('../models/person.model.js');
+const responseHandler = require('../misc/responseHandler.js')
 
 function getRequestParams(model, params) {
     var query = {}
@@ -34,9 +35,10 @@ exports.create = (req, res) => {
         .then(data => {
             res.send(data);
         }).catch(err => {
-            res.status(500).send({
+            var errMessage = {
                 message: err.message || "Some error occurred while Registering the Person."
-            });
+            }
+            responseHandler.errorCallback(500, errMessage, res)
         });
 };
 
@@ -47,9 +49,11 @@ exports.findAll = (req, res) => {
         .then(persons => {
             res.send(persons);
         }).catch(err => {
-            res.status(500).send({
+            var errMessage = {
                 message: err.message || "Some error occurred while retrieving Person details"
-            });
+            }
+            responseHandler.errorCallback(500, errMessage, res)
+
         });
 };
 
@@ -65,13 +69,16 @@ exports.findOne = (req, res) => {
             res.send(person);
         }).catch(err => {
             if (err.kind === 'ObjectId') {
-                return res.status(404).send({
+                var errMessage = {
                     message: "Person not found with id " + req.params.personId
-                });
+                }
+                responseHandler.errorCallback(404, errMessage, res)
+
             }
-            return res.status(500).send({
+            var errMessage = {
                 message: "Error retrieving Person with id " + req.params.personId
-            });
+            }
+            responseHandler.errorCallback(500, errMessage, res)
         });
 };
 
@@ -100,13 +107,15 @@ exports.update = (req, res) => {
             res.send(person);
         }).catch(err => {
             if (err.kind === 'ObjectId') {
-                return res.status(404).send({
-                    message: "Person not found with id " + req.params.personId
-                });
+                var errMessage = {
+                    message: err.message || "Person not found with id "
+                }
+                responseHandler.errorCallback(404, errMessage, res)
             }
-            return res.status(500).send({
-                message: "Error updating Person with id " + req.params.personId
-            });
+            var errMessage = {
+                message: err.message || "Error updating Person with id "
+            }
+            responseHandler.errorCallback(500, errMessage, res)
         });
 };
 
@@ -122,12 +131,14 @@ exports.delete = (req, res) => {
             res.send({ message: "Person deleted successfully!" });
         }).catch(err => {
             if (err.kind === 'ObjectId' || err.name === 'NotFound') {
-                return res.status(404).send({
-                    message: "Person not found with id " + req.params.personId
-                });
+                var errMessage = {
+                    message: err.message || "Person not found with id "
+                }
+                responseHandler.errorCallback(404, errMessage, res)
             }
-            return res.status(500).send({
-                message: "Could not delete Person with id " + req.params.personId
-            });
+            var errMessage = {
+                message: err.message || "Could not delete Person with id "
+            }
+            responseHandler.errorCallback(500, errMessage, res)
         });
 };
