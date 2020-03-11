@@ -1,4 +1,5 @@
 const Note = require('../models/note.model.js');
+const Users = require('../models/user.model')
 
 // Create and Save a new Note
 exports.create = (req, res) => {
@@ -12,7 +13,8 @@ exports.create = (req, res) => {
     // Create a Note
     const note = new Note({
         title: req.body.title || "Untitled Note",
-        content: req.body.content
+        content: req.body.content,
+        userId: req.params.userId
     });
 
     // Save Note in the database
@@ -37,6 +39,34 @@ exports.findAll = (req, res) => {
             });
         });
 };
+
+exports.findAllById = (req, res) => {
+    // Note.find().then(users => {
+    //     res.send(users)
+    // })
+
+    Note.aggregate([
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'creator'
+            }
+        }
+    ]).then(notes => {
+        res.send(notes)
+    });
+
+    // Note.find({ userId: req.params.userId })
+    //     .then(notes => {
+    //         res.send(notes);
+    //     }).catch(err => {
+    //         res.status(500).send({
+    //             message: err.message || "Some error occurred while retrieving notes."
+    //         });
+    //     });
+}
 
 // Find a single note with a noteId
 exports.findOne = (req, res) => {

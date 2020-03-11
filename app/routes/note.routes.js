@@ -2,10 +2,13 @@ module.exports = (app) => {
     const notes = require('../controllers/note.controller.js');
 
     // Create a new Note
-    app.post('/notes', notes.create);
+    app.post('/note/:userId', notes.create);
 
     // Retrieve all Notes
     app.get('/notes', notes.findAll);
+
+    // Retrieve Notes created by user with userId
+    app.get('/notes/user/:userId', notes.findAllById);
 
     // Retrieve a single Note with noteId
     app.get('/notes/:noteId', notes.findOne);

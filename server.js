@@ -20,7 +20,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(dbConfig.url, {
     useNewUrlParser: true
 }).then(() => {
-    console.log("Successful");    
+    console.log("Successful");
 }).catch(err => {
     console.log('Could not connect to the database. Exiting now...', err);
     process.exit();
@@ -28,12 +28,13 @@ mongoose.connect(dbConfig.url, {
 
 // define a simple route
 app.get('/', (req, res) => {
-    res.json({"message": "Welcome to The application"});
+    res.json({ "message": "Welcome to The application" });
 });
 
 // Require routes
 require('./app/routes/note.routes.js')(app);
 require('./app/routes/person.routes.js')(app);
+require('./app/routes/user.routes.js')(app);
 
 // listen for requests
 app.listen(3000, () => {
