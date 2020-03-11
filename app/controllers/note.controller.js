@@ -53,9 +53,31 @@ exports.findAllById = (req, res) => {
                 foreignField: '_id',
                 as: 'creator'
             }
-        }
+        },
+        {
+            $match: {
+                "userId": req.params.userId
+            }
+        },
+        {
+            "$unwind": "$creator"
+        },
+        { $project: { "creator.password": 0, "creator.password": 0 } }
     ]).then(notes => {
-        res.send(notes)
+        res.send(
+            notes.map(notes => {
+                return {
+                    "_id": notes._id,
+                    "title": notes.title,
+                    "content": notes.content,
+                    "userId": notes.userId,
+                    "creatorName": notes.creator.name,
+                    "creatorEmail": notes.creator.email,
+                    "createdAt": notes.createdAt,
+                    "updatedAt": notes.updatedAt,
+                }
+            })
+        )
     });
 
     // Note.find({ userId: req.params.userId })
