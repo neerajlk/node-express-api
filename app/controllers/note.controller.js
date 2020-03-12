@@ -1,5 +1,6 @@
 const Note = require('../models/note.model.js');
-const Users = require('../models/user.model')
+const Users = require('../models/user.model');
+const mongoose = require('mongoose');
 
 // Create and Save a new Note
 exports.create = (req, res) => {
@@ -41,53 +42,75 @@ exports.findAll = (req, res) => {
 };
 
 exports.findAllById = (req, res) => {
-    // Note.find().then(users => {
-    //     res.send(users)
-    // })
-
     Note.aggregate([
-        {
-            $lookup: {
-                from: 'users',
-                localField: 'userId',
-                foreignField: '_id',
-                as: 'creator'
-            }
-        },
-        {
-            $match: {
-                "userId": req.params.userId
-            }
-        },
-        {
-            "$unwind": "$creator"
-        },
-        { $project: { "creator.password": 0, "creator.password": 0 } }
-    ]).then(notes => {
-        res.send(
-            notes.map(notes => {
-                return {
-                    "_id": notes._id,
-                    "title": notes.title,
-                    "content": notes.content,
-                    "userId": notes.userId,
-                    "creatorName": notes.creator.name,
-                    "creatorEmail": notes.creator.email,
-                    "createdAt": notes.createdAt,
-                    "updatedAt": notes.updatedAt,
-                }
-            })
-        )
-    });
+        // { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+        // {
+        //     $lookup: {
+        //         from: 'users',
+        //         localField: 'userId',
+        //         foreignField: '_id',
+        //         as: 'creator'
+        //     }
+        // },
+        // {
+        //     "$unwind": "$creator"
+        // },
+        // {
+        //     $project: { "creator.password": 0 }
+        // }
+        // {
+        //     $count: "passing_scores"
+        // }
 
-    // Note.find({ userId: req.params.userId })
-    //     .then(notes => {
-    //         res.send(notes);
-    //     }).catch(err => {
-    //         res.status(500).send({
-    //             message: err.message || "Some error occurred while retrieving notes."
-    //         });
-    //     });
+        {
+            $facet: {
+                data: [
+                    { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'creator'
+                        }
+                    },
+                    {
+                        "$unwind": "$creator"
+                    },
+                    {
+                        $project: { "creator.password": 0 }
+                    }
+                ],
+                pageInfo: [
+                    { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+                    {
+                        $group: {
+                            "_id": null,
+                            "count": { "$sum": 1 }
+                        }
+                    },
+                    {
+                        $project: { "_id": 0 }
+                    },
+
+                ],
+
+            },
+
+        },
+        {
+            "$unwind": "$pageInfo"
+        }
+
+    ])
+        // .skip(1)
+        .addFields({ "pageInfo.page": 1, "pageInfo.pages": { $divide: ["$pageInfo.count", 3] } })
+        .then(notes => { res.send(notes[0]) })
+        .catch(err => {
+            return res.status(404).send({
+                message: "Error In Retrieving Notes"
+            })
+        });;
 }
 
 // Find a single note with a noteId
