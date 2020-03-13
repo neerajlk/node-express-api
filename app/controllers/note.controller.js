@@ -43,29 +43,21 @@ exports.findAll = (req, res) => {
 
 exports.findAllById = (req, res) => {
     Note.aggregate([
-        // { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
-        // {
-        //     $lookup: {
-        //         from: 'users',
-        //         localField: 'userId',
-        //         foreignField: '_id',
-        //         as: 'creator'
-        //     }
-        // },
-        // {
-        //     "$unwind": "$creator"
-        // },
-        // {
-        //     $project: { "creator.password": 0 }
-        // }
-        // {
-        //     $count: "passing_scores"
-        // }
-
         {
             $facet: {
                 data: [
-                    { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+                    {
+                        $match: {
+                            $and: [{
+                                title: {
+                                    $regex: (req.query.q || ''),
+                                    "$options": "i"
+                                },
+                            },
+                            { userId: new mongoose.Types.ObjectId(req.params.userId) }
+                            ]
+                        }
+                    },
                     {
                         $lookup: {
                             from: 'users',
@@ -75,14 +67,29 @@ exports.findAllById = (req, res) => {
                         }
                     },
                     {
-                        "$unwind": "$creator"
+                        $unwind: "$creator"
                     },
                     {
                         $project: { "creator.password": 0 }
+                    },
+                    {
+                        $skip: ((req.query.page || 2) - 1) * (req.query.limit || 5)
+                    },
+                    {
+                        $limit: (req.query.limit || 5) / 1
                     }
                 ],
                 pageInfo: [
-                    { $match: { userId: new mongoose.Types.ObjectId(req.params.userId) } },
+                    { $match: {
+                        $and: [{
+                            title: {
+                                $regex: (req.query.q || ''),
+                                "$options": "i"
+                            },
+                        },
+                        { userId: new mongoose.Types.ObjectId(req.params.userId) }
+                        ]
+                    } },
                     {
                         $group: {
                             "_id": null,
@@ -92,9 +99,16 @@ exports.findAllById = (req, res) => {
                     {
                         $project: { "_id": 0 }
                     },
+                    {
+                        $addFields: {
+                            page: parseInt(req.query.page) || 1,
+                            pages: { $ceil: { $divide: ["$count", parseInt(req.query.limit) || 5] } },
+                            limit: parseInt(req.query.limit) || 5,
+
+                        }
+                    }
 
                 ],
-
             },
 
         },
@@ -103,8 +117,6 @@ exports.findAllById = (req, res) => {
         }
 
     ])
-        // .skip(1)
-        .addFields({ "pageInfo.page": 1, "pageInfo.pages": { $divide: ["$pageInfo.count", 3] } })
         .then(notes => { res.send(notes[0]) })
         .catch(err => {
             return res.status(404).send({
