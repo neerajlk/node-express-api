@@ -1,5 +1,6 @@
 const User = require('../models/user.model.js');
 const Bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 
 // Create and Save a new Note
@@ -48,15 +49,42 @@ exports.create = (req, res) => {
 exports.login = (req, res) => {
     User.findOne({ "email": req.body.email }).then(user => {
         if (Bcrypt.compareSync(req.body.password, user.password)) {
-            user.password = undefined
-            res.send(user)
+            const payload = {
+                user: {
+                    id: user._id
+                }
+            }
+
+            jwt.sign(
+                payload,
+                "mysecretkey", {
+                expiresIn: 10000
+            },
+                (err, token) => {
+                    if (err) throw err;
+                    else {
+                        const payload = {
+                            "_id": user._id,
+                            "name": user.name,
+                            "email": user.email,
+                            "token": token
+                        }
+                        jwt.verify(req.headers.authorization, 'mysecretkey', function (err, decoded) {
+                            if (err) return
+                            else
+                                console.log(jwt.decode(req.headers.authorization).user.id)
+                        });
+                        res.send(payload)
+                    }
+                }
+            );
         }
         else {
             return res.status(500).send({
                 message: "Error Logging in"
             });
         }
-      
+
     }).catch(err => {
         return res.status(500).send({
             message: "Error Logging in"
