@@ -8,7 +8,7 @@ module.exports = (app) => {
     // app.get('/notes', notes.findAll);
 
     // login
-    app.post('/user/login', user.login)
+    app.post('/login', user.login)
 
 
     // Retrieve a single Note with noteId

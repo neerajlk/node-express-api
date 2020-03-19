@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-
+const gaurd = require('./app/middlewares/route-gaurd')
 
 // create express app
 const app = express();
@@ -31,6 +31,10 @@ mongoose.connect(dbConfig.url, {
 app.get('/', (req, res) => {
     res.json({ "message": "Welcome to The application" });
 });
+
+
+// route guard custom middleware
+app.use(gaurd.routeGaurd)
 
 // Require routes
 require('./app/routes/note.routes.js')(app);
