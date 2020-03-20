@@ -58,7 +58,7 @@ exports.login = (req, res) => {
             jwt.sign(
                 payload,
                 "mysecretkey", {
-                expiresIn: 1
+                expiresIn: '2h'
             },
                 (err, token) => {
                     if (err) throw err;
