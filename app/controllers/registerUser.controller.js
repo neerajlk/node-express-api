@@ -58,7 +58,7 @@ exports.login = (req, res) => {
             jwt.sign(
                 payload,
                 "mysecretkey", {
-                expiresIn: 10000
+                expiresIn: 1
             },
                 (err, token) => {
                     if (err) throw err;
@@ -69,11 +69,6 @@ exports.login = (req, res) => {
                             "email": user.email,
                             "token": token
                         }
-                        jwt.verify(req.headers.authorization, 'mysecretkey', function (err, decoded) {
-                            if (err) return
-                            else
-                                console.log(jwt.decode(req.headers.authorization).user.id)
-                        });
                         res.send(payload)
                     }
                 }

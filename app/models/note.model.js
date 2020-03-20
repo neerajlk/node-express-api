@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const NoteSchema = mongoose.Schema({
     title: String,
-    content: String,
-    userId: mongoose.ObjectId
+    content: Array,
+    userId: mongoose.ObjectId,
 }, {
     timestamps: true
 });

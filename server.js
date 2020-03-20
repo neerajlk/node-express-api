@@ -38,7 +38,6 @@ app.use(gaurd.routeGaurd)
 
 // Require routes
 require('./app/routes/note.routes.js')(app);
-require('./app/routes/person.routes.js')(app);
 require('./app/routes/user.routes.js')(app);
 
 // listen for requests

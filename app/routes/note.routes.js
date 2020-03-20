@@ -8,7 +8,7 @@ module.exports = (app) => {
     app.get('/notes', notes.findAll);
 
     // Retrieve Notes created by user with userId
-    app.get('/notes/user/:userId', notes.findAllById);
+    app.get('/user/:userId/notes', notes.findAllById);
 
     // Retrieve a single Note with noteId
     app.get('/notes/:noteId', notes.findOne);
